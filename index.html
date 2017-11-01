@@ -10,11 +10,12 @@
     var SPRITESIZE = 16;
     var CANVAS_WIDTH = window.innerWidth - 20;
     var CANVAS_HEIGHT = window.innerHeight - 20;
-    var FPS = 30;
-    var SCALE = 4;
+    var FPS = 25;
+    var SCALE = 2;
     var lx = 0;
     var ly = 0;
     var ld = 500;
+    var frame = 0;
 
     var canvasElement = document.createElement("canvas");
     canvasElement.width = CANVAS_WIDTH;
@@ -68,9 +69,23 @@
     dirtgrass.src = "assets/dirtgrass.png";
     var dirtdarkgrass = new Image();
     dirtdarkgrass.src = "assets/dirtdarkgrass.png";
-
+    var w1 = [];
+    var w2 = [];
+    w1[0] = new Image();
+    w1[0].src = "assets/water1top.png";
+    w1[1] = new Image();
+    w1[1].src = "assets/water1middle.png";
+    w1[2] = new Image();
+    w1[2].src = "assets/water1bottom.png";
+    w2[0] = new Image();
+    w2[0].src = "assets/water2top.png";
+    w2[1] = new Image();
+    w2[1].src = "assets/water2middle.png";
+    w2[2] = new Image();
+    w2[2].src = "assets/water2bottom.png";
 
     function update() {
+        frame = (frame + 1) % 1000;
     }
 
     function draw() {
@@ -78,7 +93,7 @@
         var height = CANVAS_HEIGHT;
 
         canvas.clearRect(0, 0, width, height);
-        sc.fillStyle = "#000000"
+        sc.fillStyle = "#000000";
         sc.fillRect(0,0,width,height);
 
         for (var x = 0; x < width / (SPRITESIZE * SCALE); x++) {
@@ -87,10 +102,16 @@
                 var cy = y * 16 * SCALE;
                 var dist = Math.sqrt(Math.pow(lx - cx, 2) + Math.pow(ly - cy, 2));
                 var tile = map[y][x];
-                var img = tile == 0 ? dirtgrass
-                    : tile == 1 ? dirtdark
-                        : tile == 2 ? dirtdarker
-                            : tile == 3 ? dirtdarkgrass : dirtgrass;
+                var img = {};
+                if (tile == 0) img = dirtgrass;
+                if (tile == 1) img = dirtdark;
+                if (tile == 2) img = dirtdarker;
+                if (tile == 3) img = dirtdarkgrass;
+                if (tile >= 4 && tile <= 6) {
+                    var i = (tile - 4) % 3;
+                    if (frame % 6 > 3) img = w1[i];
+                    else img = w2[i];
+                }
                 if (dist < ld * SCALE)
                     canvas.drawImage(img, cx, cy, 16 * SCALE, 16 * SCALE);
             }
