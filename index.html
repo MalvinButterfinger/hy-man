@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hy-Man</title>
+    <script src="map.js" type="application/javascript"></script>
+</head>
+<body id="body">
+<script type='text/javascript'>
+    var SPRITESIZE = 16;
+    var CANVAS_WIDTH = window.innerWidth - 20;
+    var CANVAS_HEIGHT = window.innerHeight - 20;
+    var FPS = 30;
+    var SCALE = 4;
+    var lx = 0;
+    var ly = 0;
+    var ld = 500;
+
+    var canvasElement = document.createElement("canvas");
+    canvasElement.width = CANVAS_WIDTH;
+    canvasElement.height = CANVAS_HEIGHT;
+    var canvas = canvasElement.getContext("2d");
+    canvasElement.onmousemove = function(e) {
+        lx = e.clientX;
+        ly = e.clientY;
+    };
+
+    var lightE = document.createElement("canvas");
+    lightE.width = ld;
+    lightE.height = ld;
+    var light = lightE.getContext("2d");
+    light.fillStyle = "black";
+    light.fillRect(0,0,ld,ld);
+    for (var x=0;x<ld;x++) {
+        for (var y=0;y<ld;y++) {
+            var dist = Math.sqrt(Math.pow(x - ld/2, 2) + Math.pow(y - ld/2, 2)) / (ld / 2);
+            var b = 255 * (1 - dist);
+            light.fillStyle = "#" + rgbToHex(b,b,b);
+            light.fillRect(x,y,1,1);
+        }
+    }
+
+    function rgbToHex(R,G,B) {return toHex(R)+toHex(G)+toHex(B)}
+    function toHex(n) {
+        n = parseInt(n,10);
+        if (isNaN(n)) return "00";
+        n = Math.max(0,Math.min(n,255));
+        return "0123456789ABCDEF".charAt((n-n%16)/16)
+            + "0123456789ABCDEF".charAt(n%16);
+    }
+
+    var se = document.createElement("canvas");
+    se.width = CANVAS_WIDTH;
+    se.height = CANVAS_HEIGHT;
+    var sc = se.getContext("2d");
+    document.getElementById("body").appendChild(canvasElement);
+
+    setInterval(function () {
+            update();
+            draw();
+    }, 1000 / FPS);
+
+    var dirtdark = new Image();
+    dirtdark.src = "assets/dirtdark.png";
+    var dirtdarker = new Image();
+    dirtdarker.src = "assets/dirtdarker.png";
+    var dirtgrass = new Image();
+    dirtgrass.src = "assets/dirtgrass.png";
+    var dirtdarkgrass = new Image();
+    dirtdarkgrass.src = "assets/dirtdarkgrass.png";
+
+
+    function update() {
+    }
+
+    function draw() {
+        var width = CANVAS_WIDTH;
+        var height = CANVAS_HEIGHT;
+
+        canvas.clearRect(0, 0, width, height);
+        sc.fillStyle = "#000000"
+        sc.fillRect(0,0,width,height);
+
+        for (var x = 0; x < width / (SPRITESIZE * SCALE); x++) {
+            for (var y = 0; y < height / (SPRITESIZE * SCALE); y++) {
+                var cx = x * 16 * SCALE;
+                var cy = y * 16 * SCALE;
+                var dist = Math.sqrt(Math.pow(lx - cx, 2) + Math.pow(ly - cy, 2));
+                var tile = map[y][x];
+                var img = tile == 0 ? dirtgrass
+                    : tile == 1 ? dirtdark
+                        : tile == 2 ? dirtdarker
+                            : tile == 3 ? dirtdarkgrass : dirtgrass;
+                if (dist < ld * SCALE)
+                    canvas.drawImage(img, cx, cy, 16 * SCALE, 16 * SCALE);
+            }
+        }
+
+        sc.drawImage(lightE, lx - ld/2, ly - ld/2, ld, ld);
+        canvas.globalCompositeOperation = "multiply";
+        canvas.drawImage(se,0,0,width,height);
+    }
+    //]]>
+</script>
+</body>
+</html>
