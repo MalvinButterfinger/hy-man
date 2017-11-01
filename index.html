@@ -7,6 +7,53 @@
 </head>
 <body id="body">
 <script type='text/javascript'>
+
+    function BufferLoader(context, urlList, callback) {
+        this.context = context;
+        this.urlList = urlList;
+        this.onload = callback;
+        this.bufferList = [];
+        this.loadCount = 0;
+    }
+
+    BufferLoader.prototype.loadBuffer = function(url, index) {
+        // Load buffer asynchronously
+        var request = new XMLHttpRequest();
+        request.open("GET", url, true);
+        request.responseType = "arraybuffer";
+
+        var loader = this;
+
+        request.onload = function() {
+            loader.context.decodeAudioData(
+                request.response,
+                function(buffer) {
+                    if (!buffer) {
+                        alert('error decoding file data: ' + url);
+                        return;
+                    }
+                    loader.bufferList[index] = buffer;
+                    if (++loader.loadCount == loader.urlList.length)
+                        loader.onload(loader.bufferList);
+                },
+                function(error) {
+                    console.error('decodeAudioData error', error);
+                }
+            );
+        };
+
+        request.onerror = function() {
+            alert('BufferLoader: XHR error');
+        };
+
+        request.send();
+    };
+
+    BufferLoader.prototype.load = function() {
+        for (var i = 0; i < this.urlList.length; ++i)
+            this.loadBuffer(this.urlList[i], i);
+    };
+
     var SPRITESIZE = 16;
     var CANVAS_WIDTH = window.innerWidth - 20;
     var CANVAS_HEIGHT = window.innerHeight - 20;
@@ -16,6 +63,43 @@
     var ly = 0;
     var ld = 500;
     var frame = 0;
+    var audio = new AudioContext();
+    var bufferLoader;
+    var source1;
+    var source2;
+    var source3;
+
+    bufferLoader = new BufferLoader(
+        audio,
+        [["assets/1.mp3"],
+        ["assets/2.mp3"],
+        ["assets/3.mp3"]],
+        finishedLoading
+    );
+    bufferLoader.load();
+
+    function finishedLoading(bufferList) {
+        // Create two sources and play them both together.
+        source1 = createSource(bufferList[0]);
+        source2 = createSource(bufferList[1]);
+        source3 = createSource(bufferList[2]);
+        source1.source.start(0);
+        source2.source.start(0);
+        source3.source.start(0);
+    }
+
+    function createSource(buffer) {
+        var source = audio.createBufferSource();
+        var gainNode = audio.createGain ? audio.createGain() : audio.createGainNode();
+        source.buffer = buffer;
+        source.loop = true;
+        source.connect(gainNode);
+        gainNode.connect(audio.destination);
+        return {
+            source: source,
+            gainNode: gainNode
+        };
+    }
 
     var canvasElement = document.createElement("canvas");
     canvasElement.width = CANVAS_WIDTH;
@@ -57,6 +141,7 @@
     document.getElementById("body").appendChild(canvasElement);
 
     setInterval(function () {
+        if (!(source1 || source2)) return;
             update();
             draw();
     }, 1000 / FPS);
@@ -86,6 +171,15 @@
 
     function update() {
         frame = (frame + 1) % 1000;
+        var dist1 = Math.sqrt(
+            Math.pow(lx - 100, 2)
+            + Math.pow(ly - 100, 2));
+        var dist2 = Math.sqrt(
+            Math.pow(lx, 2)
+            + Math.pow(ly - 700, 2));
+        source1.gainNode.gain.value = 1 - (dist1 / 1000);
+        source2.gainNode.gain.value = 1 - (dist2 / 1000);
+        source3.gainNode.gain.value = 1 - (dist2 / 1000);
     }
 
     function draw() {
