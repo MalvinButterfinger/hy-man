@@ -68,12 +68,14 @@
     var source1;
     var source2;
     var source3;
+    var source4;
 
     bufferLoader = new BufferLoader(
         audio,
         [["assets/1.mp3"],
         ["assets/2.mp3"],
-        ["assets/3.mp3"]],
+        ["assets/3.mp3"],
+        ["assets/4.mp3"]],
         finishedLoading
     );
     bufferLoader.load();
@@ -83,9 +85,11 @@
         source1 = createSource(bufferList[0]);
         source2 = createSource(bufferList[1]);
         source3 = createSource(bufferList[2]);
+        source4 = createSource(bufferList[3]);
         source1.source.start(0);
         source2.source.start(0);
         source3.source.start(0);
+        source4.source.start(0);
     }
 
     function createSource(buffer) {
@@ -176,10 +180,14 @@
             + Math.pow(ly - 100, 2));
         var dist2 = Math.sqrt(
             Math.pow(lx, 2)
-            + Math.pow(ly - 700, 2));
-        source1.gainNode.gain.value = 1 - (dist1 / 1000);
-        source2.gainNode.gain.value = 1 - (dist2 / 1000);
-        source3.gainNode.gain.value = 1 - (dist2 / 1000);
+            + Math.pow(ly - 300, 2));
+        var dist3 = Math.sqrt(
+            Math.pow(lx - 300, 2)
+            + Math.pow(ly - 100, 2));
+        source1.gainNode.gain.value = 1 - dist1 / 200;
+        source2.gainNode.gain.value = 1 - dist2 / 200;
+        source3.gainNode.gain.value = 1 - dist2 / 150;
+        source4.gainNode.gain.value = 1 - dist3 / 400;
     }
 
     function draw() {
