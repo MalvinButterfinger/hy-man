@@ -178,16 +178,22 @@
         var dist1 = Math.sqrt(
             Math.pow(lx - 100, 2)
             + Math.pow(ly - 100, 2));
-        var dist2 = Math.sqrt(
-            Math.pow(lx, 2)
-            + Math.pow(ly - 300, 2));
+        var dist2 = ly - 400;
         var dist3 = Math.sqrt(
-            Math.pow(lx - 300, 2)
-            + Math.pow(ly - 100, 2));
-        source1.gainNode.gain.value = 1 - dist1 / 200;
-        source2.gainNode.gain.value = 1 - dist2 / 200;
-        source3.gainNode.gain.value = 1 - dist2 / 150;
-        source4.gainNode.gain.value = 1 - dist3 / 400;
+            Math.pow(lx - 500, 2)
+            + Math.pow(ly - 200, 2));
+
+        function gain(d, m) {
+            if (d > m) return 0;
+            var x = (d/m) * Math.PI;
+            var cos = Math.cos(x);
+            return (cos / 2) + 0.5;
+        }
+
+        source1.gainNode.gain.value = gain(dist1, 500);
+        source2.gainNode.gain.value = gain(dist2, 600);
+        source3.gainNode.gain.value = gain(dist2, 700);
+        source4.gainNode.gain.value = gain(dist3, 800);
     }
 
     function draw() {
