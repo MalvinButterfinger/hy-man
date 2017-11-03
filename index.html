@@ -200,6 +200,7 @@
         var width = CANVAS_WIDTH;
         var height = CANVAS_HEIGHT;
 
+        canvas.globalCompositeOperation = "source-over";
         canvas.clearRect(0, 0, width, height);
         sc.fillStyle = "#000000";
         sc.fillRect(0,0,width,height);
